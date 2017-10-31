@@ -123,8 +123,10 @@ class SftpAdapter extends AbstractFtpAdapter
      */
     protected function login()
     {
-        if (! $this->connection->login($this->username, $this->getPassword())) {
-            throw new LogicException('Could not login with username: '.$this->username.', host: '.$this->host);
+        $authentication = $this->getAuthentication();
+
+        if (! $this->connection->login($this->getUsername(), $authentication)) {
+            throw new LogicException('Could not login with username: '.$this->getUsername().', host: '.$this->host);
         }
     }
 
@@ -149,13 +151,13 @@ class SftpAdapter extends AbstractFtpAdapter
      *
      * @return Crypt_RSA|string
      */
-    public function getPassword()
+    public function getAuthentication()
     {
         if ($this->privatekey) {
             return $this->getPrivateKey();
         }
 
-        return $this->password;
+        return $this->getPassword();
     }
 
     /**
@@ -171,8 +173,8 @@ class SftpAdapter extends AbstractFtpAdapter
 
         $key = new Crypt_RSA();
 
-        if ($this->password) {
-            $key->setPassword($this->password);
+        if ($password = $this->getPassword()) {
+            $key->setPassword($password);
         }
 
         $key->loadKey($this->privatekey);
